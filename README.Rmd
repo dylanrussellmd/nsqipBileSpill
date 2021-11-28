@@ -1,0 +1,80 @@
+---
+output: github_document
+bibliography: "./inst/citations/references.bib"
+csl: "./inst/citations/annals-of-surgery.csl"
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r knitr_options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+inline_hook <- function(x) {
+  if(is.numeric(x)) {
+    x <- round(x, digits = 2)
+  }
+  
+  if(is.numeric(x) & x > 999) {
+    return(prettyNum(x, big.mark=","))
+  }
+  
+  if(is.numeric(x) & x < 0.01) {
+    return("<0.01")
+  } 
+  
+  paste(as.character(x))
+}
+
+knitr::knit_hooks$set(inline = inline_hook)
+```
+
+```{r setup, include = FALSE}
+library(nsqipBileSpill)
+
+post <- df_match %>% 
+  comparison(spill, sex, age, bmi, diabetes, insulin, smoke, dyspnea, preopindependent, hxcopd, ascites, hxchf, hypermed, dialysis, discancr, steroid, wtloss, bleeddis, optime, ioc, supinfec, wndinfd, orgspcssi, dindo_min, dindo_maj, mort, tothlos)
+
+pre <- df %>% comparison(spill, sex, age, bmi, diabetes, insulin, smoke, dyspnea, preopindependent, hxcopd, ascites, hxchf, hypermed, dialysis, discancr, steroid, wtloss, bleeddis, optime, ioc, supinfec, wndinfd, orgspcssi, dindo_min, dindo_maj, mort, tothlos)
+
+orgspcssi_or <- df_match %>% odds_ratio(spill, orgspcssi)
+
+nnt <- function(num1, num2) {
+  round(1/((num1-num2)/100), digits = 0)
+}
+```
+
+# Intraoperative Bile Spillage as a Risk Factor for Surgical Site Infection - A Large NSQIP Database Analysis
+
+<!-- badges: start -->
+[![R build status](https://github.com/dylanrussellmd/nsqipBileSpill/workflows/R-CMD-check/badge.svg)](https://github.com/dylanrussellmd/nsqipBileSpill/actions)
+<!-- badges: end -->
+
+This is a propensity score matched analysis of bile spillage as it relates to rates of surgical site infection, minor and major complications, and total hospital length of stay using the NSQIP database.
+
+## Installation and Use
+
+You can install the latest version of nsqipBileSpill from [GitHub](https://github.com/dylanrussellmd/nsqipBileSpill) with:
+ 
+``` r
+# install.packages("devtools")
+devtools::install_github("dylanrussellmd/nsqipBileSpill")
+```
+If you would like copies of the data used to run this analysis, please contact [the author](mailto:dyl.russell@gmail.com) directly.
+
+### Introduction
+
+Laparoscopic cholecystectomy (LC) is one of the most commonly performed operations in the United States. Surgical site infection complicates 1-2% of these operations and can be associated with significant morbidity. Bile spillage (bile spillage) occurs in many of these operations. The associated risk of surgical site infection (SSI) is an ongoing area of research.
+
+### Methods
+NSQIP registries between 2005 and 2018 were queried using *Current Procedural Terminology* codes 47562 and 47563 to identify patients undergoing elective laparoscopic cholecystectomy. Patients were considered to have bile spillage if the wound classification was annotated 3 or 4. Acute cholecystitis was excluded by ICD code. Patients were propensity scored for bile spillage and matched for pre-operative risk factors. The rates of surgical site infections, morbidity, and mortality and length of stay were analyzed.
+
+### Results
+`r nrow(df_match)` (`r sum(!df_match$spill)` with no spillage and `r sum(df_match$spill)` with spillage) patients were matched and included in the analysis. After matching, no significant difference was found in superficial or deep SSI regardless of bile spillage. An absolute increase in organ-space SSI of `r pull_cell(post, orgspcssi, spill_true) - pull_cell(post, orgspcssi, spill_false)`% was detected. The group with bile spillage had small increases in both minor (`r pull_cell(post, dindo_min, spill_false)`% vs. `r pull_cell(post, dindo_min, spill_true)`%; *p* = `r pull_cell(post, dindo_min, p.value)`) and major (`r pull_cell(post, dindo_maj, spill_false)`% vs. `r pull_cell(post, dindo_maj, spill_true)`%; *p* = `r pull_cell(post, dindo_maj, p.value)`) complications. There was no difference in mortality.
+
+### Conclusion
+This retrospective database review demonstrates a very small association between BS and organ-space infections. It is unclear if routine antibiotic prophylaxis or post-exposure antibiotic treatment of bile spillage is necessary given the small clinical impact of BS.

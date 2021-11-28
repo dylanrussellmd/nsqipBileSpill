@@ -1,0 +1,47 @@
+template:
+  params:
+    ganalytics: UA-176994848-1
+    bootswatch: cerulean
+
+reference:
+- title: "Labeling Dataframes"
+  desc: "Functions for applying Hmisc::label() labels to data frames"
+- contents:
+  - fetch_label
+  - assign_label
+  - assign_labels
+- title: "Compare Groups"
+  desc: "Functions that compare the means/proportions of data frame columns by a grouping variable"
+- contents:
+  - comparison
+  - choose_test
+- title: "Formulas"
+  desc: "Functions that create or manipulate formulas"
+- contents:
+  - make_formula
+- title: "Tables"
+  desc: "Functions that create tables"
+- contents:
+  - make_table1
+  - tableone
+- title: "Column utilities"
+  desc: "Functions that add specific columns or remove records"
+- contents:
+  - starts_with("add_")
+  - remove_missing
+  - pull_cell
+- title: "Utilities"
+  desc: "Utility functions that don't fit anywhere else"
+- contents:
+  - get_percent
+  - avg
+  - bmi
+  - odds_ratio
+- title: Pipes
+  contents:
+  - starts_with("%")
+- title: "Datasets"
+  desc: "Various datasets used in the package"
+- contents:
+  - df
+  - df_match

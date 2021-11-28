@@ -1,0 +1,41 @@
+Package: nsqipBileSpill
+Title: NSQIP Bile Spill
+Version: 2.0.0
+Authors@R: 
+    person(given = "Dylan",
+           family = "Russell",
+           role = c("aut", "cre"),
+           email = "dyl.russell@gmail.com",
+           comment = c(ORCID = "0000-0002-9543-9897"))
+Description: Propensity score matched analysis of bile spillage in the NSQIP database.
+URL: https://dylanrussellmd.github.io/nsqipBileSpill
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat,
+    spelling,
+    markdown
+VignetteBuilder: knitr
+Language: en-US
+Depends: 
+    R (>= 2.10)
+Imports: 
+    magrittr,
+    dplyr,
+    nsqipr,
+    table1,
+    rlang,
+    furniture,
+    Hmisc,
+    broom,
+    epitools,
+    purrr,
+    stringr,
+    tibble
+Remotes:
+    github::dylanrussellmd/nsqipr

@@ -1,0 +1,139 @@
+---
+title: Intraoperative Bile Spillage as a Risk Factor for Surgical Site Infection - A Large NSQIP Database Analysis
+author: 
+  - Dylan Russell, MD
+  - Freeman Condon, MD
+  - William Cole, MD
+  - Dwight Kellicut, MD
+  - Sherry Wren, MD
+  - Christopher Yheulon, MD
+date: "`r Sys.Date()`"
+output: word_document
+bibliography: "../citations/references.bib"
+csl: "../citations/annals-of-surgery.csl"
+---
+```{r setup, include = FALSE}
+library(magrittr)
+library(nsqipBileSpill)
+
+## ---- setup --------
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  out.width = "100%",
+  dpi = 300
+)
+
+tableit <- function(data) {
+  kableExtra::kable(data, digits = 4) %>%
+    kableExtra::scroll_box(width = "100%")
+}
+
+inline_hook <- function(x) {
+  if(is.numeric(x)) {
+    x <- round(x, digits = 2)
+  }
+
+  if(is.numeric(x) & x > 999) {
+    return(prettyNum(x, big.mark=","))
+  }
+
+  if(is.numeric(x) & x < 0.01) {
+    return("<0.01")
+  }
+
+  paste(as.character(x))
+}
+
+knitr::knit_hooks$set(inline = inline_hook)
+
+## ---- prematch --------
+pre <- df %>% comparison(spill, sex, age, bmi, diabetes, insulin, smoke, dyspnea, preopindependent, hxcopd, ascites, hxchf, hypermed, dialysis, discancr, steroid, wtloss, bleeddis, optime, ioc, supinfec, wndinfd, orgspcssi, dindo_min, dindo_maj, mort, tothlos)
+
+## ---- postmatch --------
+post <- df_match %>%
+  comparison(spill, sex, age, bmi, diabetes, insulin, smoke, dyspnea, preopindependent, hxcopd, ascites, hxchf, hypermed, dialysis, discancr, steroid, wtloss, bleeddis, optime, ioc, supinfec, wndinfd, orgspcssi, dindo_min, dindo_maj, mort, tothlos)
+
+## ---- odds ratios --------
+supinfec_or <- df_match %>% odds_ratio(spill, supinfec)
+wndinfd_or <- df_match %>% odds_ratio(spill, wndinfd)
+orgspcssi_or <- df_match %>% odds_ratio(spill, orgspcssi)
+```
+
+## Introduction
+Laparoscopic cholecystectomy (LC) is one of the most commonly performed operations in the United States, with more than 500,000 such operations performed a year.[@Kapoor2018]  Surgical site infection complicates 1-2% of these operations and can be associated with significant morbidity requiring re-admission, re-operation, or other procedural interventions.[@Bogdanic2013;@Warren2017;@Gharde2014;@Ely2020] Bile spillage occurs in many of these operations, with rates reported in the literature ranging from 10-40%.[@Lee2011;@Shah2012a;@Choi2020] Bile spillage has recently been demonstrated to be associated with increased risk of surgical site infection (SSI) in a cohort of mostly non-elective LC.[@Peponis2018] We sought to determine the association between bile spillage and SSI during elective LC using the National Surgical Quality Improvement Program (NSQIP) Registry.
+
+## Methods
+
+### Data Acquisition and Patient Selection
+Data collection methods for the American College of Surgeons National Surgical Quality Improvement Program (NSQIP) registry are available online. NSQIP registries between 2005 and 2018 were queried using Current Procedural Terminology codes 47562 and 47563 to identify all patients undergoing outpatient elective laparoscopic cholecystectomy with or without intraoperative cholangiogram. All patients with ICD-9 or ICD-10 codes beginning with “575.” or “K81.”, respectively, were excluded. These codes reflect diagnoses of acute cholecystitis. Patients were excluded from analysis if the patient was less than 18 years old; an inpatient; having emergency surgery; on a pre-operative ventilator; ASA class V; or had pre-operative sepsis, SIRS, renal failure, wound infection(s), blood transfusions, or chemotherapy. In addition, patients were excluded if concurrent procedures were performed, the case had < 15 minutes or > 240 minutes of operative time (prolonged case duration is a known risk factor for SSI), or if the case was performed by a non-general surgeon. All records with missing data were excluded.
+
+There is no data field for bile spillage in the NSQIP record, therefore we defined the presence or absence of bile spillage through a surrogate measure utilizing wound classification. “No bile spillage” was defined as a wound classification recorded as class I (clean) or class II (clean-contaminated). Class II was included because it is defined as a case with entry into the biliary tract under controlled circumstances without unusual contamination. Any patient with a class III or class IV wound classification was defined as cases with bile spillage. Although other unintentional entries into surrounding viscera would result in a class III or class IV case, these are assumed to be excluded because concurrent procedures would presumably be present (e.g., colotomy repair).
+
+### Outcomes and Risk Adjustment Variables
+The primary outcomes of interest were superficial, deep, and organ-space surgical site infections (SSIs) occurring within 30 days of the index procedure. Secondary outcomes were length of stay and post-operative outcomes classified according to the Clavien-Dindo classification scheme.[@Dindo2004] Preoperative variables for risk adjustment included demographic data, medical co-morbidities, body mass index (BMI), and operative time.
+
+### Statistical Analysis
+Patients undergoing outpatient elective laparoscopic cholecystectomy with and without intraoperative bile spillage were propensity score matched for the pre-operative risk factors listed in table 1. Matching was performed by the nearest neighbor method without replacement in a 2:1 ratio. Analysis was completed in R version 4.0.2 (2020-06-22). Data cleaning and preparation was completed using the `nsqipr` package. Propensity score matching was performed with the `matchit` package.[@Ho2011]
+
+Descriptive statistics and outcomes were analyzed in the matched and unmatched cohorts using unpaired Welch two sample *t*-tests for continuous outcomes and Pearson's Chi-squared tests for categorical and binary outcomes.
+
+## Results
+
+### Cohort Characteristics
+In total, `r nrow(df)` patients met inclusion criteria of outpatient elective laparoscopic cholecystectomy without concurrent procedures. Overall, patients classified as having bile spillage were older, had higher rates of medical co-morbidities, and longer operative times (see table 1). Using wound classification as the surrogate marker of bile spillage resulted in an overall rate of `r get_percent(df$spill)`% spillage in the series. The rates of surgical site infections were low with overall rates in the included patient population of `r get_percent(df$supinfec)`%, `r get_percent(df$wndinfd)`%, and `r get_percent(df$orgspcssi)`%, for superficial, deep, and organ-space SSIs, respectively. In the pre-matched cohorts, patients with bile spillage had significantly higher rates of superficial SSI (`r pull_cell(pre, supinfec, spill_true)`% vs. `r pull_cell(pre, supinfec, spill_false)`%; *p* = `r pull_cell(pre, supinfec, p.value)`) and organ-space SSI (`r pull_cell(pre, orgspcssi, spill_true)`% vs. `r pull_cell(pre, orgspcssi, spill_false)`%; *p* = `r pull_cell(pre, orgspcssi, p.value)`) (see table 1). 
+
+```{r pretab, echo=FALSE}
+df %>% make_table1(spill, sex, age, bmi, diabetes, insulin, smoke, dyspnea, preopindependent, hxcopd, ascites, hxchf, hypermed, dialysis, discancr, steroid, wtloss, bleeddis, optime, ioc, supinfec, wndinfd, orgspcssi, dindo_min, dindo_maj, mort, tothlos, caption = "Pre-match Characteristics", table_num = 1)
+```
+
+### Propensity Score Matched Analysis
+In total, `r nrow(df_match)` (`r sum(!df_match$spill)` with no spillage and `r sum(df_match$spill)` with spillage) patients were propensity score matched and included in the analysis. After matching, the cohorts means with respect to pre-operative risk factors were grossly similar with no reported significant differences between the no bile spillage and bile spillage groups (see table 2).
+
+After matching, a significant difference only persisted in rates of organ-space SSI (`r pull_cell(post, orgspcssi, spill_true)`% vs. `r pull_cell(post, orgspcssi, spill_false)`%; *p* = `r pull_cell(post, orgspcssi, p.value)`) (see table 4). In the matched cohort, the odds ratio of developing an organ-space SSI with bile spillage was `r orgspcssi_or$measure[2,"estimate"]` (95% CI `r orgspcssi_or$measure[2,"lower"]`-`r orgspcssi_or$measure[2,"upper"]`).
+
+The group without bile spillage had a small but significant decrease in total length of stay (`r pull_cell(post, tothlos, spill_false)` vs. `r pull_cell(post, tothlos, spill_true)` days; *p* = `r pull_cell(post, tothlos, p.value)`). When stratified into Clavien-Dindo classifications, the group with bile spillage had small but significant increases in both minor (`r pull_cell(post, dindo_min, spill_false)`% vs. `r pull_cell(post, dindo_min, spill_true)`%; *p* = `r pull_cell(post, dindo_min, p.value)`) and major (`r pull_cell(post, dindo_maj, spill_false)`% vs. `r pull_cell(post, dindo_maj, spill_true)`%; *p* = `r pull_cell(post, dindo_maj, p.value)`) complications. There was no difference in mortality rates (`r pull_cell(post, mort, spill_false)`% vs. `r pull_cell(post, mort, spill_true)`%; *p* = `r pull_cell(post, mort, p.value)`) (see table 2).
+
+```{r posttab, echo=FALSE}
+df_match %>% make_table1(spill, sex, age, bmi, diabetes, insulin, smoke, dyspnea, preopindependent, hxcopd, ascites, hxchf, hypermed, dialysis, discancr, steroid, wtloss, bleeddis, optime, ioc, supinfec, wndinfd, orgspcssi, dindo_min, dindo_maj, mort, tothlos, caption = "Post-match Characteristics", table_num = 2)
+```
+
+## Discussion
+
+There is a paucity of robust data regarding the association between bile spillage and subsequent SSI in LC, especially in the context of ambulatory surgery. An association between bile spillage and SSI was recently described in a cohort in which approximately three-quarters of operations were performed on a non-elective basis and in which 20% of patients received post-operative antibiotics.[@Peponis2018] This paper is a valuable addition to the literature, but its findings may not be generalizable to elective planned cholecystectomy given the baseline increased risk of SSI in cholecystectomy performed for acute cholecystitis relative to other indications.[@Warren2017;@Nishida2020] We therefore sought to determine the strength of this association in ambulatory LC. 
+
+```{r nnt, echo=FALSE}
+nnt <- function(num1, num2) {
+  round(1/((num1-num2)/100), digits = 0)
+}
+```
+
+### Surgical Site Infections
+After matching, no significant difference was found in superficial or deep SSI regardless of bile spillage. A small difference in the rate of organ-space SSI was detected. While this difference reaches statistical significance, there was an absolute increase in organ-space SSI of only `r pull_cell(post, orgspcssi, spill_true)-pull_cell(post, orgspcssi, spill_false)`%. This difference is likely to have no clinical significance. The overall incidence of SSI during elective LC remained remarkably low regardless of bile spillage. This suggests bile must be spilled in `r nnt(pull_cell(post, orgspcssi, spill_true), pull_cell(post, orgspcssi, spill_false))` elective cholecystectomies to cause one additional instance of organ-space SSI compared to baseline with no spillage. While bile spillage has been associated with an increased risk of SSI in prior studies, these have included LC for acute cholecystitis and may reflect the spillage of grossly infected bile.[@Warren2017;@Peponis2018]
+
+In addition to the relative infrequency of organ-space SSI attributable to bile spillage, there are increasing data suggesting potential hazards associated with antibiotics commonly used in surgical practice. Cefazolin is often the de facto antibiotic for routine perioperative prophylaxis at most institutions. Recent studies have demonstrated that second generation cephalosporins, and cefazolin in particular, are associated with notable increases in the likelihood of developing Clostridioides difficile infection.[@Thabit2019;@Webb2020] Rarer adverse effects include anaphylaxis, the development of Stephens-Johnson spectrum syndromes and acute kidney injury.[@Branch-Elliman2019] The principles of antibiotic stewardship furthermore demand antibiotics only be administered when necessary to prevent the evolution of multi-drug resistant organisms. Given the risk of adverse outcomes associated with peri-operative antibiotic administration and the relative rarity of organ-space infections that can be attributed to bile spillage, our findings suggest that bile spillage alone may not be an indication for antibiotic prophylaxis. Unfortunately, data regarding antibiotic administration in this study’s cohort is not available via NSQIP.
+
+### Length of Stay, Morbitidy, and Mortality
+This study demonstrates a small increase in length of stay and Clavien-Dindo minor and major complications. However, although statistically significant due to the power of this study, the results are not clinically meaningful. The number of incidents of bile spillage needed to cause one additional Clavien-Dindo minor or major complication were `r nnt(pull_cell(post, dindo_min, spill_true), pull_cell(post, dindo_min, spill_false))` and `r nnt(pull_cell(post, dindo_maj, spill_true), pull_cell(post, dindo_maj, spill_false))`, respectively. Mortality was exceedingly rare and not associated with bile spillage.
+
+### Limitations and Strengths
+Our study is limited by its observational design, though there exists no way to prospectively randomize patients to undergo bile spillage as an experimental variable. Additionally, any prospective attempt to enroll upwards of 48,000 cases would be prohibitive in terms of cost and time. As a database review, inherent bias also exists towards the under-reporting of outcomes.[@Hunt2000] However, any bias towards the underreporting of outcomes such as SSI should affect both the bile spillage and no bile spillage groups equally. As “bile spillage” is not a captured outcome within the NSQIP database, we relied upon surgeons’ assessments of their infection classification as a surrogate for bile spillage. Our rationale was that a standard LC is a class II case and spillage of bile upgrades the infection classification to a class III. In cases where contamination arose from sources other than bile spillage (eg. inadvertent enterotomy), an additional CPT would have been recorded to account for the repair, and cases with additional CPTs were excluded from our analysis. Furthermore, relying on wound classification as a surrogate for bile spillage assumes accurate documentation. Surgeons may over document wound classifications in order to protect themselves in the eventuality of an SSI. This would result in more non-spillage cases in the presumed spillage group, thus reducing the difference between the two groups.
+
+```{r lc, include = FALSE}
+lc <- 458044
+#as.numeric(DBI::dbGetQuery(con, "select count(*) from puf where cpt in ('47562','47563')"))
+#Above is the code used to generate the number. Commented out due to needing to pass R CMD check in GitHub actions.
+```
+
+Due to the inclusion of several years’ worth of NSQIP data, our study is robustly powered to detect even minute statistical differences. The nature of the NSQIP database further allowed us to consider practices across as broad as possible a range of surgeons and institutions. Furthermore, this study is widely applicable. The `r nrow(df)` records included in this study comprise `r round((nrow(df)/lc) * 100, digits = 0)`% of the `r lc` laparoscopic cholecystectomies in the NSQIP database.
+
+## Conclusion
+This retrospective database review of ambulatory elective laparoscopic cholecystectomies demonstrates only a very small association between bile spillage and organ-space infections. The strength of this association was such that an additional organ-space infection was found once for every `r nnt(pull_cell(post, orgspcssi, spill_true), pull_cell(post, orgspcssi, spill_false))` cases of bile spillage. Overall rates of SSI in this cohort were low and the difference in rates is clinically negligible. Thus, we suggest bile spillage has no relevant bearing on the likelihood of a post-operative SSI in elective laparoscopic cholecystectomy.
+
+## Disclosures
+Drs. Dylan Russell, Freeman Condon, William Cole, Sherry Wren, and Christopher Yheulon have no conflicts of interest or financial ties to disclose
+
+## References
+

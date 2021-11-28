@@ -1,0 +1,13 @@
+^nsqipBileSpill\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^LICENSE\.md$
+^README\.Rmd$
+^\.travis\.yml$
+^\.github$
+^\.googleauth
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^NEWS\.md$
+^inst/manuscripts$
